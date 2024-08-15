@@ -1,6 +1,8 @@
-﻿using DevFreela.Application.Models;
+﻿using DevFreela.Application.Commands.InsertUser;
+using DevFreela.Application.Commands.InsertUserSkills;
+using DevFreela.Application.Queries.GetUserById;
 using DevFreela.Application.Services;
-using DevFreela.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevFreela.API.Controllers
@@ -9,20 +11,19 @@ namespace DevFreela.API.Controllers
     [Route("api/users")]
     public class UsersController : ControllerBase
     {
-        private readonly DevFreelaDbContext _context;
         private readonly IUserService _userService;
+        private readonly IMediator _mediator;
 
-        public UsersController(DevFreelaDbContext context, IUserService userService)
+        public UsersController(IUserService userService, IMediator mediator)
         {
-            _context = context;
             _userService = userService;
+            _mediator = mediator;
         }
 
-        // GET api/users/1234
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var result = _userService.GetById(id);
+            var result = await _mediator.Send(new GetUserByIdQuery(id));
 
             if (!result.IsSuccess)
             {
@@ -32,19 +33,18 @@ namespace DevFreela.API.Controllers
             return Ok(result);
         }
 
-        // POST api/users
         [HttpPost]
-        public IActionResult Post(CreateUserInputModel model)
+        public async Task<IActionResult> Post(InsertUserCommand command)
         {
-            var result = _userService.Insert(model);
+            var result = await _mediator.Send(command);
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Data }, model);
+            return CreatedAtAction(nameof(GetById), new { id = result.Data }, command);
         }
 
         [HttpPost("{id}/skills")]
-        public IActionResult PostSkills(int id, UserSkillsInputModel model)
+        public async Task<IActionResult> PostSkills(int id, InsertUserSkillsCommand command)
         {
-            _userService.InsertSkills(id, model);
+            await _mediator.Send(command);
 
             return NoContent();
         }
