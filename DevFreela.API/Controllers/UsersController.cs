@@ -1,7 +1,6 @@
 ﻿using DevFreela.Application.Commands.InsertUser;
 using DevFreela.Application.Commands.InsertUserSkills;
 using DevFreela.Application.Queries.GetUserById;
-using DevFreela.Application.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +10,10 @@ namespace DevFreela.API.Controllers
     [Route("api/users")]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService _userService;
         private readonly IMediator _mediator;
 
-        public UsersController(IUserService userService, IMediator mediator)
+        public UsersController(IMediator mediator)
         {
-            _userService = userService;
             _mediator = mediator;
         }
 
